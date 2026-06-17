@@ -4,8 +4,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Plus, Edit, Eye } from "lucide-react";
+import { Plus, Edit, Eye, Search } from "lucide-react";
 import { format } from "date-fns";
+import { Input } from "@/components/ui/input";
 import { DeleteBlogButton } from "@/components/admin/DeleteBlogButton";
 import { TogglePublishButton } from "@/components/admin/TogglePublishButton";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
@@ -18,19 +19,34 @@ export const metadata: Metadata = {
 export default async function AdminBlogsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; search?: string }>;
 }) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
-  const { blogs, totalPages } = await getBlogs({ page, onlyPublished: false });
+  const search = params.search || "";
+  const { blogs, totalPages } = await getBlogs({ page, search, onlyPublished: false });
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Manage Blogs</h1>
-        <Link href="/admin/blogs/new" className={buttonVariants({ variant: "default" })}>
-          <Plus className="mr-2 h-4 w-4" /> New Blog
-        </Link>
+        <div className="flex items-center gap-2">
+          <form className="relative w-full sm:w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              name="search"
+              placeholder="Search by title..."
+              className="pl-8"
+              defaultValue={search}
+            />
+            {/* Using a hidden submit button ensures Enter key submits the form natively */}
+            <button type="submit" className="hidden" />
+          </form>
+          <Link href="/admin/blogs/new" className={buttonVariants({ variant: "default" })}>
+            <Plus className="mr-2 h-4 w-4" /> New Blog
+          </Link>
+        </div>
       </div>
 
       <div className="border rounded-lg">
@@ -89,13 +105,13 @@ export default async function AdminBlogsPage({
           <PaginationContent>
             {page > 1 && (
               <PaginationItem>
-                <PaginationPrevious href={`/admin/blogs?page=${page - 1}`} />
+                <PaginationPrevious href={`/admin/blogs?page=${page - 1}${search ? `&search=${search}` : ""}`} />
               </PaginationItem>
             )}
             {Array.from({ length: totalPages }).map((_, i) => (
               <PaginationItem key={i}>
                 <PaginationLink
-                  href={`/admin/blogs?page=${i + 1}`}
+                  href={`/admin/blogs?page=${i + 1}${search ? `&search=${search}` : ""}`}
                   isActive={page === i + 1}
                 >
                   {i + 1}
@@ -104,7 +120,7 @@ export default async function AdminBlogsPage({
             ))}
             {page < totalPages && (
               <PaginationItem>
-                <PaginationNext href={`/admin/blogs?page=${page + 1}`} />
+                <PaginationNext href={`/admin/blogs?page=${page + 1}${search ? `&search=${search}` : ""}`} />
               </PaginationItem>
             )}
           </PaginationContent>
