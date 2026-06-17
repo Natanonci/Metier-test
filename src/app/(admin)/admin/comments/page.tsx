@@ -1,29 +1,46 @@
-import prisma from "@/lib/prisma";
-import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { CommentWithBlog } from "@/types";
 import { CommentActionButtons } from "./CommentActionButtons";
 import { Metadata } from "next";
+import Link from "next/link";
+import { getComments } from "@/app/actions/comment";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 export const metadata: Metadata = {
   title: "Manage Comments | Admin",
 };
 
-export default async function AdminCommentsPage() {
-  const comments = (await prisma.comment.findMany({
-    include: {
-      blog: {
-        select: { title: true },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-  })) as CommentWithBlog[];
+export default async function AdminCommentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; status?: string }>;
+}) {
+  const params = await searchParams;
+  const page = Number(params.page) || 1;
+  const status = params.status || "ALL";
 
+  const { comments, totalPages } = await getComments({ page, status });
+  const tabs = ["ALL", "PENDING", "APPROVED", "REJECTED", "DELETED"];
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Manage Comments</h1>
+
+      <div className="flex space-x-2 border-b pb-2">
+        {tabs.map((tab) => (
+          <Link
+            key={tab}
+            href={`/admin/comments?status=${tab}`}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              status === tab
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            {tab}
+          </Link>
+        ))}
+      </div>
 
       <div className="border rounded-lg">
         <Table>
@@ -73,6 +90,33 @@ export default async function AdminCommentsPage() {
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <Pagination>
+          <PaginationContent>
+            {page > 1 && (
+              <PaginationItem>
+                <PaginationPrevious href={`/admin/comments?page=${page - 1}&status=${status}`} />
+              </PaginationItem>
+            )}
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  href={`/admin/comments?page=${i + 1}&status=${status}`}
+                  isActive={page === i + 1}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            {page < totalPages && (
+              <PaginationItem>
+                <PaginationNext href={`/admin/comments?page=${page + 1}&status=${status}`} />
+              </PaginationItem>
+            )}
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 }

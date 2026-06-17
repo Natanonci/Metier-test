@@ -46,4 +46,5 @@ enum CommentStatus {
   PENDING
   APPROVED
   REJECTED
+  DELETED
 }

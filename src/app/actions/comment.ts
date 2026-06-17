@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma";
 import { commentSchema } from "@/lib/validations/comment";
 import { revalidatePath } from "next/cache";
 import { ActionResponse } from "@/types";
+import { CommentStatus } from "@prisma/client";
+import { SITE_CONFIG } from "@/lib/constants";
 
 export async function submitComment(
   prevState: unknown,
@@ -43,17 +45,40 @@ export async function submitComment(
   }
 }
 
-export async function getPendingComments() {
-  return await prisma.comment.findMany({
-    where: { status: "PENDING" },
-    include: { blog: { select: { title: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+export async function getComments({
+  page = 1,
+  status = "ALL",
+}: {
+  page?: number;
+  status?: string;
+} = {}) {
+  const pageSize = SITE_CONFIG.pagination.pageSize;
+  const skip = (page - 1) * pageSize;
+
+  const where = status === "ALL" ? {} : { status: status as CommentStatus };
+
+  const [comments, total] = await Promise.all([
+    prisma.comment.findMany({
+      where,
+      include: { blog: { select: { title: true } } },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: pageSize,
+    }),
+    prisma.comment.count({ where }),
+  ]);
+
+  return {
+    comments,
+    totalPages: Math.ceil(total / pageSize),
+    currentPage: page,
+    total,
+  };
 }
 
 export async function updateCommentStatus(
   id: string,
-  status: "APPROVED" | "REJECTED"
+  status: CommentStatus
 ) {
   try {
     const comment = await prisma.comment.update({
@@ -71,8 +96,9 @@ export async function updateCommentStatus(
 
 export async function deleteComment(id: string) {
   try {
-    const comment = await prisma.comment.delete({
+    const comment = await prisma.comment.update({
       where: { id },
+      data: { status: "DELETED" },
       include: { blog: { select: { slug: true } } },
     });
 
