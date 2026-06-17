@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Blog {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  summary     String
+  content     String    @db.Text
+  images      String[] // Array of image URLs (up to 7 as per requirements)
+  isPublished Boolean   @default(false)
+  viewCount   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  comments    Comment[]
+}
+
+model Comment {
+  id         String        @id @default(cuid())
+  blog       Blog          @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  blogId     String
+  senderName String
+  message    String        @db.Text
+  status     CommentStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
