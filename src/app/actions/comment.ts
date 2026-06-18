@@ -7,6 +7,8 @@ import { ActionResponse } from "@/types";
 import { CommentStatus } from "@prisma/client";
 import { SITE_CONFIG } from "@/lib/constants";
 
+const blogSelectForComment = { select: { slug: true } };
+
 export async function submitComment(
   prevState: unknown,
   formData: FormData
@@ -84,7 +86,7 @@ export async function updateCommentStatus(
     const comment = await prisma.comment.update({
       where: { id },
       data: { status },
-      include: { blog: { select: { slug: true } } },
+      include: { blog: blogSelectForComment },
     });
 
     revalidatePath(`/blog/${comment.blog.slug}`);
@@ -100,8 +102,8 @@ export async function deleteComment(id: string) {
   try {
     const comment = await prisma.comment.update({
       where: { id },
-      data: { status: "DELETED" },
-      include: { blog: { select: { slug: true } } },
+      data: { status: CommentStatus.DELETED },
+      include: { blog: blogSelectForComment },
     });
 
     revalidatePath(`/blog/${comment.blog.slug}`);
@@ -117,7 +119,7 @@ export async function hardDeleteComment(id: string) {
   try {
     const comment = await prisma.comment.delete({
       where: { id },
-      include: { blog: { select: { slug: true } } },
+      include: { blog: blogSelectForComment },
     });
 
     revalidatePath(`/blog/${comment.blog.slug}`);

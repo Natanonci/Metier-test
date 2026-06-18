@@ -19,7 +19,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (state.success) {
-      router.push("/admin/blogs");
+      router.push("/admin");
       router.refresh();
     }
   }, [state.success, router]);

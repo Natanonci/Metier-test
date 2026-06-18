@@ -73,8 +73,14 @@ export function BlogForm({ initialData }: BlogFormProps) {
         router.push("/admin/blogs");
         router.refresh();
       }
-    } catch (error: any) {
-      if (error && error.digest && error.digest.startsWith("NEXT_REDIRECT")) {
+    } catch (error: unknown) {
+      if (
+        error !== null &&
+        typeof error === "object" &&
+        "digest" in error &&
+        typeof (error as { digest?: string }).digest === "string" &&
+        (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+      ) {
         toast.success(initialData ? "อัปเดตบทความสำเร็จ" : "สร้างบทความสำเร็จ");
         throw error;
       }

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { ActionResponse } from "@/types";
 
 const formSchema = z.object({
   senderName: z.string().min(1, "กรุณากรอกชื่อ").regex(/^[ก-๙0-9\s]+$/, "กรุณากรอกภาษาไทยและตัวเลขเท่านั้น"),
@@ -20,7 +21,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function CommentForm({ blogId }: { blogId: string }) {
   const [isPending, startTransition] = useTransition();
-  const [submitResult, setSubmitResult] = useState<{ success: boolean; message?: string; error?: string } | null>(null);
+  const [submitResult, setSubmitResult] = useState<ActionResponse | null>(null);
 
   const {
     register,
@@ -44,7 +45,7 @@ export function CommentForm({ blogId }: { blogId: string }) {
       formData.append("blogId", blogId);
 
       const result = await submitComment(null, formData);
-      setSubmitResult(result as any);
+      setSubmitResult(result);
       if (result.success) {
         reset();
       }
