@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { CommentStatusBadge } from "@/components/admin/StatusBadge";
 import { format } from "date-fns";
 import { CommentActionButtons } from "./CommentActionButtons";
 import { Metadata } from "next";
@@ -7,6 +7,7 @@ import Link from "next/link";
 import { getComments } from "@/app/actions/comment";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { TableActionProvider } from "@/components/admin/TableActionProvider";
+import { COMMENT_STATUS_TABS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Manage Comments | Admin",
@@ -22,13 +23,13 @@ export default async function AdminCommentsPage({
   const status = params.status || "ALL";
 
   const { comments, totalPages } = await getComments({ page, status });
-  const tabs = ["ALL", "PENDING", "APPROVED", "REJECTED", "DELETED"];
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Manage Comments</h1>
 
       <div className="flex space-x-2 border-b pb-2">
-        {tabs.map((tab) => (
+        {COMMENT_STATUS_TABS.map((tab) => (
           <Link
             key={tab}
             href={`/admin/comments?status=${tab}`}
@@ -70,17 +71,7 @@ export default async function AdminCommentsPage({
                   <TableCell className="max-w-xs truncate">{comment.message}</TableCell>
                   <TableCell className="max-w-[150px] truncate">{comment.blog.title}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={
-                        comment.status === "APPROVED"
-                          ? "default"
-                          : comment.status === "REJECTED"
-                          ? "destructive"
-                          : "secondary"
-                      }
-                    >
-                      {comment.status}
-                    </Badge>
+                    <CommentStatusBadge status={comment.status} />
                   </TableCell>
                   <TableCell>{format(new Date(comment.createdAt), "MMM d, HH:mm")}</TableCell>
                   <TableCell className="text-right">

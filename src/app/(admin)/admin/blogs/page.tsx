@@ -2,7 +2,7 @@ import { getBlogs } from "@/app/actions/blog";
 import { Blog } from "@prisma/client";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { BlogStatusBadge } from "@/components/admin/StatusBadge";
 import Link from "next/link";
 import { Plus, Edit, Eye, Search } from "lucide-react";
 import { format } from "date-fns";
@@ -11,6 +11,7 @@ import { BlogActionButtons } from "@/components/admin/BlogActionButtons";
 import { TogglePublishButton } from "@/components/admin/TogglePublishButton";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { TableActionProvider } from "@/components/admin/TableActionProvider";
+import { BLOG_STATUS_TABS } from "@/lib/constants";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -27,13 +28,6 @@ export default async function AdminBlogsPage({
   const search = params.search || "";
   const status = params.status || "ALL";
   const { blogs, totalPages } = await getBlogs({ page, search, status });
-
-  const tabs = [
-    { label: "All", value: "ALL" },
-    { label: "Published", value: "PUBLISHED" },
-    { label: "Draft", value: "DRAFT" },
-    { label: "Deleted", value: "DELETED" },
-  ];
 
   return (
     <div className="space-y-6">
@@ -59,7 +53,7 @@ export default async function AdminBlogsPage({
       </div>
 
       <div className="flex space-x-2 border-b mb-6">
-        {tabs.map((tab) => (
+        {BLOG_STATUS_TABS.map((tab) => (
           <Link
             key={tab.value}
             href={`/admin/blogs?status=${tab.value}${search ? `&search=${search}` : ""}`}
@@ -99,13 +93,7 @@ export default async function AdminBlogsPage({
                 <TableRow key={blog.id}>
                   <TableCell className="font-medium">{blog.title}</TableCell>
                   <TableCell>
-                    {blog.isDeleted ? (
-                      <Badge variant="destructive">Deleted</Badge>
-                    ) : blog.isPublished ? (
-                      <Badge variant="default">Published</Badge>
-                    ) : (
-                      <Badge variant="secondary">Draft</Badge>
-                    )}
+                    <BlogStatusBadge isDeleted={blog.isDeleted} isPublished={blog.isPublished} />
                   </TableCell>
                   <TableCell>
                     {!blog.isDeleted && <TogglePublishButton id={blog.id} isPublished={blog.isPublished} />}
