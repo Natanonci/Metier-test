@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { BlogActionButtons } from "@/components/admin/BlogActionButtons";
 import { TogglePublishButton } from "@/components/admin/TogglePublishButton";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { TableActionProvider } from "@/components/admin/TableActionProvider";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default async function AdminBlogsPage({
   const { blogs, totalPages } = await getBlogs({ page, search, status });
 
   const tabs = [
-    { label: "All (รวม)", value: "ALL" },
+    { label: "All", value: "ALL" },
     { label: "Published", value: "PUBLISHED" },
     { label: "Draft", value: "DRAFT" },
     { label: "Deleted", value: "DELETED" },
@@ -74,7 +75,8 @@ export default async function AdminBlogsPage({
       </div>
 
       <div className="border rounded-lg">
-        <Table>
+        <TableActionProvider>
+          <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Title</TableHead>
@@ -117,7 +119,8 @@ export default async function AdminBlogsPage({
               ))
             )}
           </TableBody>
-        </Table>
+          </Table>
+        </TableActionProvider>
       </div>
 
       {totalPages > 1 && (

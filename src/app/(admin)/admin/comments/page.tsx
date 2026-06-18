@@ -6,6 +6,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { getComments } from "@/app/actions/comment";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { TableActionProvider } from "@/components/admin/TableActionProvider";
 
 export const metadata: Metadata = {
   title: "Manage Comments | Admin",
@@ -43,7 +44,8 @@ export default async function AdminCommentsPage({
       </div>
 
       <div className="border rounded-lg">
-        <Table>
+        <TableActionProvider>
+          <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Sender</TableHead>
@@ -88,7 +90,8 @@ export default async function AdminCommentsPage({
               ))
             )}
           </TableBody>
-        </Table>
+          </Table>
+        </TableActionProvider>
       </div>
 
       {totalPages > 1 && (

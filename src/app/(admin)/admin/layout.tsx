@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ADMIN_ROUTES } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { logoutAdmin } from "@/app/actions/auth";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function AdminLayout({
   children,
@@ -11,7 +12,7 @@ export default function AdminLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 w-full border-b bg-slate-900 text-white">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href={ADMIN_ROUTES.DASHBOARD} className="font-bold text-xl">
               Admin Panel
@@ -37,7 +38,8 @@ export default function AdminLayout({
           </div>
         </div>
       </header>
-      <main className="flex-1 container py-10">{children}</main>
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-10">{children}</main>
+      <Toaster position="bottom-right" richColors visibleToasts={1} />
     </div>
   );
 }

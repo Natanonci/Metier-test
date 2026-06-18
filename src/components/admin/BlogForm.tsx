@@ -5,6 +5,8 @@ import { useState } from "react";
 import { createBlog, updateBlog } from "@/app/actions/admin";
 import { type BlogInput, blogSchema } from "@/lib/validations/blog";
 import { Blog } from "@prisma/client";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,17 +67,19 @@ export function BlogForm({ initialData }: BlogFormProps) {
       }
 
       if (result && result.success === false) {
-        alert(result.error || "Failed to save blog.");
+        toast.error(result.error || "เกิดข้อผิดพลาดในการบันทึก");
       } else if (result && result.success) {
+        toast.success("อัปเดตบทความสำเร็จ");
         router.push("/admin/blogs");
         router.refresh();
       }
     } catch (error: any) {
       if (error && error.digest && error.digest.startsWith("NEXT_REDIRECT")) {
+        toast.success(initialData ? "อัปเดตบทความสำเร็จ" : "สร้างบทความสำเร็จ");
         throw error;
       }
       console.error(error);
-      alert("An unexpected error occurred.");
+      toast.error("เกิดข้อผิดพลาด กรุณาลองใหม่");
     } finally {
       setIsPending(false);
     }
@@ -165,7 +169,8 @@ export function BlogForm({ initialData }: BlogFormProps) {
           Cancel
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving..." : initialData ? "Update Blog" : "Create Blog"}
+          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isPending ? (initialData ? "กำลังอัปเดต..." : "กำลังสร้าง...") : initialData ? "อัปเดตบทความ" : "สร้างบทความ"}
         </Button>
       </div>
     </form>

@@ -89,8 +89,10 @@ export async function updateCommentStatus(
 
     revalidatePath(`/blog/${comment.blog.slug}`);
     revalidatePath(`/admin/comments`);
+    return { success: true };
   } catch (error) {
     console.error("Failed to update comment status:", error);
+    return { success: false, error: "Failed to update comment status" };
   }
 }
 
@@ -104,8 +106,10 @@ export async function deleteComment(id: string) {
 
     revalidatePath(`/blog/${comment.blog.slug}`);
     revalidatePath(`/admin/comments`);
+    return { success: true };
   } catch (error) {
     console.error("Failed to delete comment:", error);
+    return { success: false, error: "Failed to delete comment" };
   }
 }
 
@@ -118,7 +122,9 @@ export async function hardDeleteComment(id: string) {
 
     revalidatePath(`/blog/${comment.blog.slug}`);
     revalidatePath(`/admin/comments`);
+    return { success: true };
   } catch (error) {
     console.error("Failed to hard delete comment:", error);
+    return { success: false, error: "Failed to permanently delete comment" };
   }
 }
