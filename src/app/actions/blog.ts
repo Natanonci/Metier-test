@@ -8,11 +8,11 @@ import { BlogWithComments } from "@/types";
 export async function getBlogs({
   page = 1,
   search = "",
-  onlyPublished = true,
+  status = "PUBLISHED",
 }: {
   page?: number;
   search?: string;
-  onlyPublished?: boolean;
+  status?: "ALL" | "PUBLISHED" | "DRAFT" | "DELETED" | string;
 } = {}): Promise<{
   blogs: Blog[];
   totalPages: number;
@@ -22,9 +22,20 @@ export async function getBlogs({
   const pageSize = SITE_CONFIG.pagination.pageSize;
   const skip = (page - 1) * pageSize;
 
+  let statusFilter = {};
+  if (status === "PUBLISHED") {
+    statusFilter = { isPublished: true, isDeleted: false };
+  } else if (status === "DRAFT") {
+    statusFilter = { isPublished: false, isDeleted: false };
+  } else if (status === "DELETED") {
+    statusFilter = { isDeleted: true };
+  } else if (status === "ALL") {
+    statusFilter = { isDeleted: false };
+  }
+
   const where = {
     AND: [
-      onlyPublished ? { isPublished: true } : {},
+      statusFilter,
       search
         ? {
             title: {

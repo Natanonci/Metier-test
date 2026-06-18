@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SITE_CONFIG } from "@/lib/constants";
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -16,9 +16,6 @@ export default function PublicLayout({
           <nav className="flex items-center gap-6">
             <Link href="/" className="text-sm font-medium hover:underline underline-offset-4">
               Home
-            </Link>
-            <Link href="/admin" className="text-sm font-medium hover:underline underline-offset-4 text-muted-foreground">
-              Admin
             </Link>
           </nav>
         </div>

@@ -108,3 +108,17 @@ export async function deleteComment(id: string) {
     console.error("Failed to delete comment:", error);
   }
 }
+
+export async function hardDeleteComment(id: string) {
+  try {
+    const comment = await prisma.comment.delete({
+      where: { id },
+      include: { blog: { select: { slug: true } } },
+    });
+
+    revalidatePath(`/blog/${comment.blog.slug}`);
+    revalidatePath(`/admin/comments`);
+  } catch (error) {
+    console.error("Failed to hard delete comment:", error);
+  }
+}

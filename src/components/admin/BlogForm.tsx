@@ -20,6 +20,17 @@ export function BlogForm({ initialData }: BlogFormProps) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
   const [images, setImages] = useState<string[]>(initialData?.images || []);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [slug, setSlug] = useState<string>(initialData?.slug || "");
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const generatedSlug = value
+      .toLowerCase()
+      .replace(/[^a-z0-9\u0E00-\u0E7F\s-]/g, "")
+      .replace(/\s+/g, "-");
+    setSlug(generatedSlug);
+  };
 
   async function handleSubmit(formData: FormData) {
     setIsPending(true);
@@ -32,9 +43,15 @@ export function BlogForm({ initialData }: BlogFormProps) {
       images: images,
     };
 
+    setErrors({});
     const validated = blogSchema.safeParse(rawData);
     if (!validated.success) {
-      alert(validated.error.issues[0].message);
+      const fieldErrors: Record<string, string> = {};
+      validated.error.issues.forEach(issue => {
+        const field = issue.path[0] as string;
+        if (!fieldErrors[field]) fieldErrors[field] = issue.message;
+      });
+      setErrors(fieldErrors);
       setIsPending(false);
       return;
     }
@@ -47,13 +64,16 @@ export function BlogForm({ initialData }: BlogFormProps) {
         result = await createBlog(validated.data);
       }
 
-      if (result.success) {
+      if (result && result.success === false) {
+        alert(result.error || "Failed to save blog.");
+      } else if (result && result.success) {
         router.push("/admin/blogs");
         router.refresh();
-      } else {
-        alert(result.error || "Failed to save blog.");
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error && error.digest && error.digest.startsWith("NEXT_REDIRECT")) {
+        throw error;
+      }
       console.error(error);
       alert("An unexpected error occurred.");
     } finally {
@@ -83,22 +103,26 @@ export function BlogForm({ initialData }: BlogFormProps) {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
-              <Input id="title" name="title" defaultValue={initialData?.title} required />
+              <Input id="title" name="title" defaultValue={initialData?.title} required onChange={handleTitleChange} />
+              {errors.title && <span className="text-sm text-red-500">{errors.title}</span>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="slug">Slug (Unique URL)</Label>
-              <Input id="slug" name="slug" defaultValue={initialData?.slug} required placeholder="my-blog-post" />
+              <Input id="slug" name="slug" value={slug} onChange={(e) => setSlug(e.target.value)} required placeholder="my-blog-post" />
+              {errors.slug && <span className="text-sm text-red-500">{errors.slug}</span>}
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="summary">Summary</Label>
             <Textarea id="summary" name="summary" defaultValue={initialData?.summary} required rows={2} />
+            {errors.summary && <span className="text-sm text-red-500">{errors.summary}</span>}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="content">Full Content</Label>
             <Textarea id="content" name="content" defaultValue={initialData?.content} required rows={10} />
+            {errors.content && <span className="text-sm text-red-500">{errors.content}</span>}
           </div>
 
           <div className="flex items-center space-x-2">
@@ -131,6 +155,7 @@ export function BlogForm({ initialData }: BlogFormProps) {
               </div>
             ))}
             {images.length === 0 && <p className="text-sm text-muted-foreground italic">No images added.</p>}
+            {errors.images && <span className="text-sm text-red-500 block mt-2">{errors.images}</span>}
           </div>
         </CardContent>
       </Card>

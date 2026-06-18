@@ -1,25 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import { decrypt } from "@/lib/auth";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export async function proxy(request: NextRequest) {
-  const session = request.cookies.get("session")?.value;
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-  // Protect admin routes
-  if (request.nextUrl.pathname.startsWith("/admin") && !request.nextUrl.pathname.startsWith("/admin/login")) {
+  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+    const session = request.cookies.get('admin_session');
     if (!session) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
-    }
-
-    try {
-      await decrypt(session);
-    } catch (error) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
+      const loginUrl = new URL('/admin/login', request.url);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
   return NextResponse.next();
 }
 
+export const middleware = proxy;
+
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ['/admin', '/admin/:path*'],
 };

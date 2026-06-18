@@ -19,7 +19,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (state.success) {
-      router.push("/admin");
+      router.push("/admin/blogs");
       router.refresh();
     }
   }, [state.success, router]);
@@ -40,7 +40,7 @@ export default function LoginPage() {
               <Input
                 id="username"
                 name="username"
-                placeholder="admin"
+                placeholder="Username"
                 required
                 disabled={isPending}
               />
@@ -51,6 +51,7 @@ export default function LoginPage() {
                 id="password"
                 name="password"
                 type="password"
+                placeholder="Password"
                 required
                 disabled={isPending}
               />

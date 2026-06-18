@@ -26,6 +26,7 @@ model Blog {
   content     String    @db.Text
   images      String[] // Array of image URLs (up to 7 as per requirements)
   isPublished Boolean   @default(false)
+  isDeleted   Boolean   @default(false)
   viewCount   Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

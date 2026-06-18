@@ -52,7 +52,7 @@ export async function login(
       expires: expires.toISOString(),
     });
 
-    (await cookies()).set("session", session, { expires, httpOnly: true });
+    (await cookies()).set("admin_session", session, { expires, httpOnly: true });
 
     return { success: true };
   } catch (error) {
@@ -61,6 +61,10 @@ export async function login(
   }
 }
 
-export async function logout() {
-  (await cookies()).set("session", "", { expires: new Date(0) });
+import { redirect } from "next/navigation";
+
+export async function logoutAdmin() {
+  const cookieStore = await cookies();
+  cookieStore.delete("admin_session");
+  redirect("/admin/login");
 }

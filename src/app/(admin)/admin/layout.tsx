@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ADMIN_ROUTES } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
-import { logout } from "@/app/actions/auth";
+import { logoutAdmin } from "@/app/actions/auth";
 
 export default function AdminLayout({
   children,
@@ -26,11 +26,11 @@ export default function AdminLayout({
             </nav>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-sm font-medium hover:underline underline-offset-4">
+            <Link href="/" target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:underline underline-offset-4">
               View Site
             </Link>
-            <form action={logout}>
-              <Button variant="outline" size="sm" className="bg-transparent text-white border-white hover:bg-white hover:text-slate-900">
+            <form action={logoutAdmin}>
+              <Button type="submit" variant="outline" size="sm" className="bg-transparent text-white border-white hover:bg-white hover:text-slate-900">
                 Logout
               </Button>
             </form>
